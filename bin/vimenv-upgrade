@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+set -e
+[ -n "$VIMENV_DEBUG" ] && set -x
+
+if [ ! -d "$VIMENV_ROOT"/versions ]; then
+  mkdir "$VIMENV_ROOT"/versions
+fi
+
+VIM_SOURCE="$VIMENV_ROOT"/src
+if [ ! -e "$VIM_SOURCE" ]; then
+  hg clone https://vim.googlecode.com/hg "$VIM_SOURCE"
+fi
+
+VIM_VERSION=`hg tags --cwd "$VIM_SOURCE" | perl -nle 'print if $.==2 && s/^v(\d+)-(\d+)-(\d+).*/\1.\2.\3/'`
+
+cd "$VIM_SOURCE"
+
+update() {
+  if hg incoming --cwd "$VIM_SOURCE" >/dev/null
+  then
+    hg pull --cwd "$VIM_SOURCE" && hg rebase --dest default --keepbranches --cwd "$VIM_SOURCE"
+  fi
+}
+
+configure() {
+  ./configure \
+    --with-features=huge \
+    --with-compiledby="yasu <adminrooter7@gmail.com>" \
+    --enable-multibyte \
+    --enable-rubyinterp \
+    --enable-pythoninterp \
+    --enable-python3interp \
+    --enable-perlinterp \
+    --disable-tclinterp \
+    --enable-mzschemeinterp \
+    --enable-luainterp \
+    --with-lua-prefix=/usr \
+    --enable-cscope \
+    --enable-fail-if-missing \
+    --prefix=$VIMENV_ROOT/versions/"$VIM_VERSION"
+}
+
+clean() {
+  if [ -e "$VIM_SOURCE" ]; then
+    hg -revert -a --cwd "$VIM_SOURCE" && rm -f $(hg st -in --cwd "$VIM_SOURCE")
+  fi
+}
+
+#trap clean EXIT
+update && configure && make -f "$VIM_SOURCE"/Makefile && make install && clean

@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+set -e
+
+if [ "$1" = "--complete" ]; then
+  exec vimenv versions --bare
+fi
+
+if [ -z "$VIMENV_ROOT" ]; then
+  VIMENV_ROOT="${HOME}/.vimenv"
+fi
+
+unset FORCE
+if [ "$1" = "-f" ] || [ "$1" = "--force" ]; then
+  FORCE=true
+  shift
+fi
+
+DEFINITION="$1"
+case "$DEFINITION" in
+  "" | -* )
+    { vimenv-help uninstall 2>/dev/null ||
+      set -ne '/^#/!q;s/.\{1,2\}//;1,4d;p' < "$0"
+    } >&2
+    exit 1
+    ;;
+esac
+
+VERSION_NAME="${DEFINITION##*/}"
+PREFIX="${VIMENV_ROOT}/versions/${VERSION_NAME}"
+
+if [ -z "$FORCE" ]; then
+  if [ ! -d "$PREFIX" ]; then
+    echo "vimenv: version \`$VERSION_NAME' not installed" >&2
+    exit 1
+  fi
+
+  read -p "vimenv: remove $PREFIX? "
+  case "$REPLY" in
+    y* | Y* ) ;;
+    * ) exit 1 ;;
+  esac
+fi
+
+if [ -d "$PREFIX" ]; then
+  rm -rf "$PREFIX"
+  vimenv rehash
+fi
