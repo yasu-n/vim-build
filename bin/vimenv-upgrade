@@ -12,16 +12,16 @@ if [ ! -e "$VIM_SOURCE" ]; then
   hg clone https://vim.googlecode.com/hg "$VIM_SOURCE"
 fi
 
+
+if hg incoming --cwd "$VIM_SOURCE" >/dev/null
+then
+   hg pull --cwd "$VIM_SOURCE" && hg rebase --dest default --keepbranches --cwd "$VIM_SOURCE"
+fi
+
+
 VIM_VERSION=`hg tags --cwd "$VIM_SOURCE" | perl -nle 'print if $.==2 && s/^v(\d+)-(\d+)-(\d+).*/\1.\2.\3/'`
 
 cd "$VIM_SOURCE"
-
-update() {
-  if hg incoming --cwd "$VIM_SOURCE" >/dev/null
-  then
-    hg pull --cwd "$VIM_SOURCE" && hg rebase --dest default --keepbranches --cwd "$VIM_SOURCE"
-  fi
-}
 
 configure() {
   ./configure \
@@ -38,7 +38,7 @@ configure() {
     --with-lua-prefix=/usr \
     --enable-cscope \
     --enable-fail-if-missing \
-    --prefix=$VIMENV_ROOT/versions/"$VIM_VERSION"
+    --prefix=$VIMENV_ROOT/versions/"$VIM_VERSION" "$*"
 }
 
 clean() {
@@ -48,4 +48,4 @@ clean() {
 }
 
 #trap clean EXIT
-update && configure && make -f "$VIM_SOURCE"/Makefile && make install && clean
+configure && make -f "$VIM_SOURCE"/Makefile && make install && clean
