@@ -12,7 +12,10 @@ if [ ! -e "$VIM_SOURCE" ]; then
   hg clone https://vim.googlecode.com/hg "$VIM_SOURCE"
 fi
 
-VIM_VERSION=`hg tags --cwd "$VIM_SOURCE" | perl -nle 'print if $.==2 && s/^v(\d+)-(\d+)-(\d+).*/\1.\2.\3/'`
+#if hg incoming --cwd "$VIM_SOURCE" >/dev/null
+#then
+#   hg pull --cwd "$VIM_SOURCE" && hg --rebase --dest default --keepbranches --cwd "$VIM_SOURCE"
+#fi
 
 if [ -e "$VIMENV_ROOT"/versions/"$VIM_VERSION" ]; then
   rm -rf "$VIMENV_ROOT"/versions/"$VIM_VERSION"
@@ -21,12 +24,11 @@ fi
 cd "$VIM_SOURCE"
 
 configure() {
-  ./configure \
+    ./configure \
     --with-features=huge \
     --with-compiledby="yasu <adminrooter7@gmail.com>" \
     --enable-multibyte \
     --enable-rubyinterp \
-    --enable-pythoninterp \
     --enable-python3interp \
     --enable-perlinterp \
     --disable-tclinterp \
@@ -35,12 +37,12 @@ configure() {
     --with-lua-prefix=/usr \
     --enable-cscope \
     --enable-fail-if-missing \
-    --prefix=$VIMENV_ROOT/versions/"$VIM_VERSION"
+    --prefix=$VIMENV_ROOT/versions/vim "$*"
 }
 
 clean() {
   if [ -e "$VIM_SOURCE" ]; then
-    hg revert -a --cwd "$VIM_SOURCE" && rm -f $(hg st -in --cwd "$VIM_SOURCE")
+    rm -rf "$VIM_SOURCE"
   fi
 }
 
