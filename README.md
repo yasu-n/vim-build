@@ -5,10 +5,10 @@ vim-build - vim builder
 # SYNOPSIS
 
   # install as vimenv plugin
-  % git clone git://gihub.com/yasu-n/vim-build.git ~/.vimenv/plugins/vim-build
+  `git clone git://gihub.com/yasu-n/vim-build.git ~/.vimenv/plugins/vim-build`
 
   # install latest version vim binary
-  vimenv install
+  `vimenv install`
 
 # DESCRIPTION
 
