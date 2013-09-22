@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-set -e
-[ -n "$VIMENV_DEBUG" ] && set -x
-
-VIM_SOURCE="$VIMENV_ROOT"/src
-if [ -e "$VIM_SOURCE" ]; then
-  hg tags --cwd "$VIM_SOURCE" | awk '{ print $1 }' | sort
-fi
