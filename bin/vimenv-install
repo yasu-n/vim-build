@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 set -e
 [ -n "$VIMENV_DEBUG" ] && set -x
@@ -12,6 +12,16 @@ if [ ! -e "$VIM_SOURCE" ]; then
   hg clone https://vim.googlecode.com/hg "$VIM_SOURCE"
 fi
 
+if [ ! -n "$VIM_VERSION" ]; then
+  VIM_VERSION="vim"
+fi
+
+CONFIGURE_OPTIONS="$*"
+# debug
+echo "configure: $CONFIGURE_OPTIONS"
+echo "VIM_VERSION: $VIM_VERSION"
+read -p "Press Enter key"
+
 if [ -e "$VIMENV_ROOT"/versions/"$VIM_VERSION" ]; then
   rm -rf "$VIMENV_ROOT"/versions/"$VIM_VERSION"
 fi
@@ -20,7 +30,18 @@ cd "$VIM_SOURCE"
 
 configure() {
     ./configure \
-    --prefix=$VIMENV_ROOT/versions/vim "$*"
+       --with-features=huge \
+       --enable-multibyte=yes \
+       --enable-rubyinterp=yes \
+       --enable-python3interp=yes \
+       --enable-perlinterp=yes \
+       --disable-tclinterp \
+       --enable-mzschemeinterp=yes \
+       --enable-luainterp=yes \
+       --with-lua-prefix=/usr \
+       --enable-cscope \
+       --enable-fail-if-missing \
+       --prefix=$VIMENV_ROOT/versions/"$VIM_VERSION" "$*"
 }
 
 clean() {
