@@ -4,15 +4,17 @@ vim-build - vim builder
 
 # SYNOPSIS
 
-  ## install as vimenv plugin
-  `git clone git://gihub.com/yasu-n/vim-build.git ~/.vimenv/plugins/vim-build`
+```
+  1. install as vimenv plugin
+  $ git clone git://gihub.com/yasu-n/vim-build.git ~/.vimenv/plugins/vim-build`
 
-  ## install latest version vim binary
-  `vimenv install [configure-options]`
+  2. install latest version vim binary
+  $ vimenv install [configure-options]`
 
-  ## change output directory( in ~/.vimenv/versions/).
-  `VIM_VERSION=test vimenv install`
-  vim binary was output ~/.vimenv/versions/test.
+  3. change output directory( in ~/.vimenv/versions/).
+  $ VIM_VERSION=test vimenv install`
+  $ vim binary was output ~/.vimenv/versions/test.
+```
 
 # DESCRIPTION
 
