@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+[ -n "$VIMENV_DEBUG" ] && set -x
+
+if [ ! -d "$VIMENV_ROOT"/versions ]; then
+  mkdir "$VIMENV_ROOT"/versions
+fi
+
+VIM_VERSION="$1"
+if [ ! -e "$VIMENV_ROOT"/versions/"$VIM_VERSION" ]; then
+  echo "No such as directory."
+  exit 1
+fi
+
+
+if [ -e "$VIMENV_ROOT"/versions/"$VIM_VERSION" ]; then
+  rm -rf "$VIMENV_ROOT"/versions/"$VIM_VERSION"
+fi

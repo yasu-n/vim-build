@@ -50,5 +50,5 @@ clean() {
   fi
 }
 
-trap clean EXIT
-configure && make -f "$VIM_SOURCE"/Makefile && make install
+# trap clean EXIT
+configure && make -f "$VIM_SOURCE"/Makefile && make install && clean
