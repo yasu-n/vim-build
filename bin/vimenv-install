@@ -1,5 +1,44 @@
 #!/bin/sh
 
+### function {{{
+# error usage
+usage_exit() {
+  echo "Usage: vimenv install [-f tar.gz] [-o dir] -- [options...]" 1>&2
+  exit 1
+}
+
+# error remove
+not_remove_file() {
+  echo "bye!" 1>&2
+  exit 1
+}
+
+# select build source
+select_mode() {
+  if [ $F_FLG -ne 0 ]; then
+    hg clone https://vim.googlecode.com/hg "$VIM_SOURCE"
+  else
+    tar xvf "$VIM_ARCHIVE" -C "$VIM_SOURCE"
+    cd $(find "$VIM_SOURCE" -mindepth 1 -maxdepth 1 -type d |sed 1q)
+    cp -rp ./ "$VIM_SOURCE"
+    # find "$VIM_SOURCE" -mindepth 2 -exec mv {} -t "$VIM_SOURCE" \;
+  fi
+}
+
+# configure
+configure() {
+  ./configure --prefix=$VIMENV_ROOT/versions/"$VIM_VERSION" "$OPT_CONFIG"
+}
+
+# remove source directory
+clean() {
+  if [ -e "$VIM_SOURCE" ]; then
+    rm -rf "$VIM_SOURCE"
+  fi
+}
+# }}}
+
+# debug
 set -e
 [ -n "$VIMENV_DEBUG" ] && set -x
 
@@ -7,58 +46,76 @@ if [ ! -d "$VIMENV_ROOT"/versions ]; then
   mkdir "$VIMENV_ROOT"/versions
 fi
 
+# set configure
 VIM_SOURCE="$VIMENV_ROOT"/src
-if [ ! -e "$VIM_SOURCE" ]; then
-  hg clone https://vim.googlecode.com/hg "$VIM_SOURCE"
+if [ -e "$VIM_SOURCE" ]; then
+  rm -rf "$VIM_SOURCE"/*
+else
+  mkdir "$VIM_SOURCE"
 fi
 
-while getopts v: OPT
+O_FLG=1
+F_FLG=1
+# set options
+while getopts "f:o:" OPT
 do
   case $OPT in
-    "o" ) VIM_VERSION="$OPTARG";;
-     *  ) exit 1;;
+    o)
+      VIM_VERSION="$OPTARG"
+      O_FLG=0
+      ;;
+    f)
+      VIM_ARCHIVE="$OPTARG"
+      F_FLG=0
+      ;;
+    *)
+      usage_exit
+      ;;
   esac
 done
 
+# delete options
 shift `expr $OPTIND - 1`
+OPT_CONFIG="$@"
 
-config_options="$@"
-
-if [ ! -n "$VIM_VERSION" ]; then
+# set argument
+if [ $O_FLG -eq 0 -a ! -n "$VIM_VERSION" ]; then
+  usage_exit
+fi
+if [ $O_FLG -ne 0 ]; then
   VIM_VERSION="vim"
 fi
 
-
-if [ -e "$VIMENV_ROOT"/versions/"$VIM_VERSION" ]; then
-  rm -rf "$VIMENV_ROOT"/versions/"$VIM_VERSION"
+if [ $F_FLG -eq 0 -a ! -n "$VIM_ARCHIVE" ]; then
+  usage_exit
 fi
 
+if [ -e "$VIMENV_ROOT"/versions/"$VIM_VERSION" ]; then
+  while /bin/true
+  do
+    "Can I delete directory?[yes|no]"
+    read ans
+
+    case ${ans} in
+      [Yy]|[Yy][Ee][Ss])
+        rm -rf "$VIMENV_ROOT"/versions/"$VIM_VERSION"
+        break
+        ;;
+      [Nn]|[Nn][Oo])
+        not_remove_file
+        break
+        ;;
+      *)
+        not_remove_file 
+        break
+        ;;
+    esac
+  done
+fi
+
+# select source
+select_mode
+
+trap clean EXIT
 cd "$VIM_SOURCE" 
-
-echo "$config_options"
-read -p "config enter"
-configure() {
-   ./configure \
-     --with-features=huge \
-     --enable-multibyte=yes \
-     --enable-rubyinterp=yes \
-     --enable-python3interp=yes \
-     --enable-perlinterp=yes \
-     --disable-tclinterp \
-     --enable-mzschemeinterp=yes \
-     --enable-luainterp=yes \
-     --with-lua-prefix=/usr \
-     --enable-cscope \
-     --enable-fail-if-missing \
-     --prefix=$VIMENV_ROOT/versions/"$VIM_VERSION" "$config_options"
-}
-
-
-clean() {
-  if [ -e "$VIM_SOURCE" ]; then
-    rm -rf "$VIM_SOURCE"
-  fi
-}
-
-# trap clean EXIT
 configure && make -f "$VIM_SOURCE"/Makefile && make install && clean

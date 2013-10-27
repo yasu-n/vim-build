@@ -11,6 +11,10 @@ vim-build - vim builder
   2. install latest version vim binary
     $ vimenv install -- <configure-options>
 
+    if you install from tarball, using -f option
+    
+    $ vimenv install -f vim.tar.bz2 -- <configure-options>
+
   3. change output directory( in ~/.vimenv/versions/)
     $ vimenv install -o <output_directory>
        vim binary was output ~/.vimenv/versions/<output_directory>
