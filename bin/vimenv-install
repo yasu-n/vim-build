@@ -1,4 +1,19 @@
 #!/bin/sh
+# debug
+set -e
+[ -n "$VIMENV_DEBUG" ] && set -x
+
+if [ ! -d "$VIMENV_ROOT"/versions ]; then
+  mkdir "$VIMENV_ROOT"/versions
+fi
+
+# set configure
+VIM_SOURCE="$VIMENV_ROOT"/src
+if [ -e "$VIM_SOURCE" ]; then
+  rm -rf "$VIM_SOURCE"/*
+else
+  mkdir "$VIM_SOURCE"
+fi
 
 ### function {{{
 # error usage
@@ -27,7 +42,7 @@ select_mode() {
 
 # configure
 configure() {
-  ./configure --prefix=$VIMENV_ROOT/versions/"$VIM_VERSION" "$OPT_CONFIG"
+  ./configure --prefix=$VIMENV_ROOT/versions/"$VIM_VERSION" $OPT_CONFIG
 }
 
 # remove source directory
@@ -38,21 +53,6 @@ clean() {
 }
 # }}}
 
-# debug
-set -e
-[ -n "$VIMENV_DEBUG" ] && set -x
-
-if [ ! -d "$VIMENV_ROOT"/versions ]; then
-  mkdir "$VIMENV_ROOT"/versions
-fi
-
-# set configure
-VIM_SOURCE="$VIMENV_ROOT"/src
-if [ -e "$VIM_SOURCE" ]; then
-  rm -rf "$VIM_SOURCE"/*
-else
-  mkdir "$VIM_SOURCE"
-fi
 
 O_FLG=1
 F_FLG=1
