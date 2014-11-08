@@ -8,19 +8,24 @@ vim-build - vim builder
   1. install as vimenv plugin
     $ git clone git://gihub.com/yasu-n/vim-build.git ~/.vimenv/plugins/vim-build
 
-  2. install latest version vim binary
-    $ vimenv install -- <configure-options>
-
-    if you install from tarball, using -f option
+  2. show tagname
+    $ vimenv install -l
     
-    $ vimenv install -f vim.tar.bz2 -- <configure-options>
+    Using curl command. If curl command don't use on your machine,
+     (1) download hgtags file(https://vim.googlecode.com/hg/.hgtags)
+     (2) rename and copy to vim-build directory
+        $ cp .hgtags <VIM_BUILD>/hgtags
 
-  3. change output directory( in ~/.vimenv/versions/)
-    $ vimenv install -o <output_directory>
-       vim binary was output ~/.vimenv/versions/<output_directory>
-
-  4. add options and install specified output directory.
-    $ vimenv install -o hoge -- --with-compiledby="foo <foo@example.com>"
+  3. install vim
+    [latest version]
+    $ vimenv install -n [-- <BUILD_OPTIONS>]
+    
+    [tagname version]
+    $ vimenv install -t <TAG_NAME> [-- <BUILD_OPTIONS>]
+    
+    [tarball version]
+    $ vimenv install -f vim.tar.bz2 [-- <BUILD_OPTIONS>]
+  
 ```
 
 # DESCRIPTION

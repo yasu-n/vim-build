@@ -3,119 +3,153 @@
 set -e
 [ -n "$VIMENV_DEBUG" ] && set -x
 
+# make file if directory is not exist
 if [ ! -d "$VIMENV_ROOT"/versions ]; then
-  mkdir "$VIMENV_ROOT"/versions
+    mkdir "$VIMENV_ROOT"/versions
 fi
 
-# set configure
+# create download directory
 VIM_SOURCE="$VIMENV_ROOT"/src
 if [ -e "$VIM_SOURCE" ]; then
-  rm -rf "$VIM_SOURCE"/*
-else
-  mkdir "$VIM_SOURCE"
+    rm -rf "$VIM_SOURCE"
 fi
+mkdir "$VIM_SOURCE"
 
-### function {{{
-# error usage
-usage_exit() {
-  echo "Usage: vimenv install [-f tar.gz] [-o dir] -- [options...]" 1>&2
-  exit 1
+
+### function
+unset VIM_ARCHIVE
+unset VIM_VERSION
+unset TAG_NAME
+unset BUILD_OPTIONS
+VIM_BUILD_ROOT=`pwd`
+
+# usage
+usage() {
+    echo "Usage: "
+    echo "  vimenv install -l"
+    echo "  vimenv install -f <SOURCE>.tar.gz [-- <BUILD_OPTIONS>]"
+    echo "  vimenv install -t <TAG_NAME> [-- <BUILD_OPTIONS>]"
+    echo "  vimenv install -n [-- <BUILD_OPTIONS>]"
+    exit 0
 }
 
-# error remove
-not_remove_file() {
-  echo "bye!" 1>&2
-  exit 1
+# list tag name
+print_tagname() {
+    if [ -e "$VIM_BUILD"/hgtags ]; then
+        cat "$VIM_BUILD"/hgtags | awk '{ print $2 }' | sort
+    else
+        echo "available version info"
+        curl -s https://vim.googlecode.com/hg/.hgtags | awk '{ print $2 }' | sort
+    fi
+    exit 0
 }
 
-# select build source
-select_mode() {
-  if [ $F_FLG -ne 0 ]; then
+# check directory exist
+exist_directory() {
+    if [ -e "$VIMENV_ROOT"/versions/"$VIM_VERSION" ]; then
+        echo "This directory already exists: $VIM_VERSION"
+        while /bin/true
+        do
+            echo "Do you delete directory?[yes|no]"
+            read ans
+    
+            case ${ans} in
+                [Yy]|[Yy][Ee][Ss])
+                    rm -rf "$VIMENV_ROOT"/versions/"$VIM_VERSION"
+                    break
+                    ;;
+                [Nn]|[Nn][Oo])
+                    exit 0
+                    ;;
+                *)
+                    ;;
+            esac
+        done
+    fi
+}
+
+# download latest version
+download_latest() {
+    VIM_VERSION="latest"
+    exist_directory
     hg clone https://vim.googlecode.com/hg "$VIM_SOURCE"
-  else
+}
+
+# download tagname version
+download_tagname() {
+    VIM_VERSION="$TAG_NAME"
+    exist_directory
+    hg clone https://vim.googlecode.com/hg -r "$TAG_NAME" "$VIM_SOURCE"
+}
+
+# extract archive 
+extract_archive() {
+    VIM_VERSION="vim"
+    exist_directory
     tar xvf "$VIM_ARCHIVE" -C "$VIM_SOURCE"
-    cd $(find "$VIM_SOURCE" -mindepth 1 -maxdepth 1 -type d |sed 1q)
-    cp -rp ./ "$VIM_SOURCE"
-    # find "$VIM_SOURCE" -mindepth 2 -exec mv {} -t "$VIM_SOURCE" \;
-  fi
+    cd $(find "$VIM_SOURCE" -mindepth 1 -maxdepth 1 -type d | sed 1q)
+    cp -Rp ./ "$VIM_SOURCE"
 }
 
 # configure
 configure() {
-  ./configure --prefix=$VIMENV_ROOT/versions/"$VIM_VERSION" $OPT_CONFIG
+    ./configure --prefix="$VIMENV_ROOT"/versions/"$VIM_VERSION" $BUILD_OPTIONS
 }
 
 # remove source directory
 clean() {
-  if [ -e "$VIM_SOURCE" ]; then
-    rm -rf "$VIM_SOURCE"
-  fi
+    if [ -e "$VIM_SOURCE" ]; then
+        rm -rf "$VIM_SOURCE"
+    fi
 }
-# }}}
 
 
-O_FLG=1
-F_FLG=1
-# set options
-while getopts "f:o:" OPT
+### set options
+while getopts "f:t:n:l" OPT
 do
-  case $OPT in
-    o)
-      VIM_VERSION="$OPTARG"
-      O_FLG=0
-      ;;
-    f)
-      VIM_ARCHIVE="$OPTARG"
-      F_FLG=0
-      ;;
-    *)
-      usage_exit
-      ;;
-  esac
+    case $OPT in
+        f)
+            VIM_ARCHIVE="$OPTARG"
+            if [ ! -n "$VIM_ARCHIVE" ];then
+                usage
+            fi
+            extract_archive
+            break
+            ;;
+        t)
+            TAG_NAME="$OPTARG"
+            if [ ! -n "$TAG_NAME" ]; then
+                usage
+            fi
+            download_tagname
+            break
+            ;;
+        n)
+            download_latest
+            break
+            ;;
+        l)
+            print_tagname
+            break
+            ;;
+        \?)
+            usage
+            break
+            ;;
+    esac
 done
 
-# delete options
+
+### delete options
 shift `expr $OPTIND - 1`
-OPT_CONFIG="$@"
 
-# set argument
-if [ $O_FLG -eq 0 -a ! -n "$VIM_VERSION" ]; then
-  usage_exit
-fi
-if [ $O_FLG -ne 0 ]; then
-  VIM_VERSION="vim"
-fi
+### set argument
+BUILD_OPTIONS="$@"
 
-if [ $F_FLG -eq 0 -a ! -n "$VIM_ARCHIVE" ]; then
-  usage_exit
-fi
-
-if [ -e "$VIMENV_ROOT"/versions/"$VIM_VERSION" ]; then
-  while /bin/true
-  do
-    "Can I delete directory?[yes|no]"
-    read ans
-
-    case ${ans} in
-      [Yy]|[Yy][Ee][Ss])
-        rm -rf "$VIMENV_ROOT"/versions/"$VIM_VERSION"
-        break
-        ;;
-      [Nn]|[Nn][Oo])
-        not_remove_file
-        break
-        ;;
-      *)
-        not_remove_file 
-        break
-        ;;
-    esac
-  done
-fi
-
-# select source
-select_mode
-
+### exit trap
 trap clean EXIT
-cd "$VIM_SOURCE" 
+
+### configure, make, make install
+cd "$VIM_SOURCE"
 configure && make -f "$VIM_SOURCE"/Makefile && make install && clean
+
