@@ -21,8 +21,7 @@ unset VIM_ARCHIVE
 unset VIM_VERSION
 unset TAG_NAME
 unset BUILD_OPTIONS
-VIM_BUILD_ROOT=`pwd`
-
+VIM_BUILD_ROOT="$VIMENV_ROOT"/plugins/vim-build
 # usage
 usage() {
     echo "Usage: "
@@ -35,8 +34,8 @@ usage() {
 
 # list tag name
 print_tagname() {
-    if [ -e "$VIM_BUILD"/hgtags ]; then
-        cat "$VIM_BUILD"/hgtags | awk '{ print $2 }' | sort
+    if [ -e "$VIM_BUILD_ROOT"/hgtags ]; then
+        cat "$VIM_BUILD_ROOT"/hgtags | awk '{ print $2 }' | sort
     else
         echo "available version info"
         curl -s https://vim.googlecode.com/hg/.hgtags | awk '{ print $2 }' | sort
