@@ -92,6 +92,7 @@ extract_archive() {
 
 # configure
 configure() {
+    echo "$BUILD_OPTIONS"
     ./configure --prefix="$VIMENV_ROOT"/versions/"$VIM_VERSION" $BUILD_OPTIONS
 }
 
@@ -131,7 +132,7 @@ do
             print_tagname
             break
             ;;
-        \?)
+        *)
             usage
             break
             ;;
@@ -140,7 +141,7 @@ done
 
 
 ### delete options
-shift `expr $OPTIND - 1`
+shift `expr $OPTIND`
 
 ### set argument
 BUILD_OPTIONS="$@"
