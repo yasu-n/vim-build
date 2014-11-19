@@ -92,7 +92,6 @@ extract_archive() {
 
 # configure
 configure() {
-    echo "$BUILD_OPTIONS"
     ./configure --prefix="$VIMENV_ROOT"/versions/"$VIM_VERSION" $BUILD_OPTIONS
 }
 
@@ -105,7 +104,7 @@ clean() {
 
 
 ### set options
-while getopts "f:t:n:l" OPT
+while getopts ":f:t:n:l" OPT
 do
     case $OPT in
         f)
@@ -114,7 +113,6 @@ do
                 usage
             fi
             extract_archive
-            break
             ;;
         t)
             TAG_NAME="$OPTARG"
@@ -122,26 +120,27 @@ do
                 usage
             fi
             download_tagname
-            break
             ;;
         n)
             download_latest
-            break
             ;;
         l)
             print_tagname
-            break
             ;;
-        *)
+        :)
+            echo "${0}: option requires an -$OPTARG"
             usage
-            break
+            ;;
+        \?)
+            echo "${0}: illegal option -$OPTARG"
+            usage
             ;;
     esac
 done
 
 
 ### delete options
-shift `expr $OPTIND`
+shift `expr $OPTIND - 1`
 
 ### set argument
 BUILD_OPTIONS="$@"
