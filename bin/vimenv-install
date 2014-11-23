@@ -104,7 +104,7 @@ clean() {
 
 
 ### set options
-while getopts ":f:t:n:l" OPT
+while getopts ":f:t:nl" OPT
 do
     case $OPT in
         f)
