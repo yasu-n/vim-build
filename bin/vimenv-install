@@ -34,11 +34,12 @@ usage() {
 
 # list tag name
 print_tagname() {
-    if [ -e "$VIM_BUILD_ROOT"/hgtags ]; then
-        cat "$VIM_BUILD_ROOT"/hgtags | awk '{ print $2 }' | sort
+    if [ -e "$VIM_BUILD_ROOT"/tags ]; then
+        cat "$VIM_BUILD_ROOT"/tags | awk '{ print $2 }' | sort
     else
         echo "available version info"
-        curl -s https://vim.googlecode.com/hg/.hgtags | awk '{ print $2 }' | sort
+        git ls-remote -t https://github.com/vim/vim.git | awk '{ print $2 }' \
+            | awk -F/ '{ print $NF }' | sort
     fi
     exit 0
 }
@@ -47,7 +48,7 @@ print_tagname() {
 exist_directory() {
     if [ -e "$VIMENV_ROOT"/versions/"$VIM_VERSION" ]; then
         echo "This directory already exists: $VIM_VERSION"
-        while /bin/true
+        while /usr/bin/true
         do
             echo "Do you delete directory?[yes|no]"
             read ans
@@ -71,14 +72,16 @@ exist_directory() {
 download_latest() {
     VIM_VERSION="latest"
     exist_directory
-    hg clone https://vim.googlecode.com/hg "$VIM_SOURCE"
+    git clone https://github.com/vim/vim.git "$VIM_SOURCE"
+    cd "$VIM_SOURCE"
+    git pull
 }
 
 # download tagname version
 download_tagname() {
     VIM_VERSION="$TAG_NAME"
     exist_directory
-    hg clone https://vim.googlecode.com/hg -r "$TAG_NAME" "$VIM_SOURCE"
+    git clone https://github.com/vim/vim.git -b "$TAG_NAME" "$VIM_SOURCE"
 }
 
 # extract archive 
@@ -92,7 +95,7 @@ extract_archive() {
 
 # configure
 configure() {
-    ./configure --prefix="$VIMENV_ROOT"/versions/"$VIM_VERSION" $BUILD_OPTIONS
+    ./configure --prefix="$VIMENV_ROOT"/versions/"$VIM_VERSION" $BUILD_OPTIONS >> $HOME/build.log
 }
 
 # remove source directory
@@ -150,5 +153,6 @@ trap clean EXIT
 
 ### configure, make, make install
 cd "$VIM_SOURCE"
+echo "$BUILD_OPTIONS" > ~/build.log
 configure && make -f "$VIM_SOURCE"/Makefile && make install && clean
 

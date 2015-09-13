@@ -11,10 +11,7 @@ vim-build - vim builder
   2. show tagname
     $ vimenv install -l
     
-    Using curl command. If curl command don't use on your machine,
-     (1) download hgtags file(https://vim.googlecode.com/hg/.hgtags)
-     (2) rename and copy to vim-build directory
-        $ cp .hgtags <VIM_BUILD>/hgtags
+    Required git command.
 
   3. install vim
     [latest version]
@@ -33,3 +30,4 @@ vim-build - vim builder
   vim-build is an [vimenv](https://github.com/raa0121/vimenv) plugin that
   provides an `vimenv install` command to compile and install latest version
   of vim on Unix-like systems.
+
