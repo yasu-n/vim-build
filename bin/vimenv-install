@@ -74,7 +74,6 @@ download_latest() {
     exist_directory
     git clone https://github.com/vim/vim.git "$VIM_SOURCE"
     cd "$VIM_SOURCE"
-    git pull
 }
 
 # download tagname version
