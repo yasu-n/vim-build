@@ -50,7 +50,7 @@ exist_directory() {
         echo "This directory already exists: $VIM_VERSION"
         while /usr/bin/true
         do
-            echo "Do you delete directory?[yes|no]"
+            echo "Do you delete directory?[yN]"
             read ans
     
             case ${ans} in
