@@ -94,7 +94,7 @@ extract_archive() {
 
 # configure
 configure() {
-    ./configure --prefix="$VIMENV_ROOT"/versions/"$VIM_VERSION" $BUILD_OPTIONS >> $HOME/build.log
+    ./configure --prefix="$VIMENV_ROOT"/versions/"$VIM_VERSION" $BUILD_OPTIONS
 }
 
 # remove source directory
