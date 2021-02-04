@@ -152,6 +152,5 @@ trap clean EXIT
 
 ### configure, make, make install
 cd "$VIM_SOURCE"
-echo "$BUILD_OPTIONS" > ~/build.log
 configure && make -f "$VIM_SOURCE"/Makefile && make install && clean
 
